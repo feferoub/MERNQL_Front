@@ -19,7 +19,7 @@ function Template(props) {
           props.history.push("/home");
         }}
       >
-        <HomeIcon style={{ fontSize: 40, color: theme.palette.primary }} />
+        <HomeIcon style={{ fontSize: 40, color: theme.palette.white.main }} />
       </IconButton>
       <IconButton
         color="secondary"

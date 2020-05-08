@@ -7,25 +7,43 @@ import {
   Button,
 } from "@material-ui/core";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
+import AlternateEmailIcon from "@material-ui/icons/AlternateEmail";
 import LockIcon from "@material-ui/icons/Lock";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
-import { useMutation } from "@apollo/react-hooks";
+import { useMutation, useLazyQuery } from "@apollo/react-hooks";
 import { SIGNUP } from "../contents/user/mutations";
+import { CHECK_USER_EXIST } from "../contents/user/queries";
 import { Redirect } from "react-router-dom";
 import { useAuth } from "../context/auth";
 import CustomTextField from "../contents/components/TextField";
+import DelayedTextField from "../contents/components/DelayedTextField";
 
 function SignupModal(props) {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [errorField, setErrorField] = useState(null);
-  const userNameRef = useRef();
   const classes = useStyles();
   const [signup, { data }] = useMutation(SIGNUP);
+  const [getUser, getUserResult] = useLazyQuery(CHECK_USER_EXIST, {
+    fetchPolicy: "network-only",
+  });
   const { setAuthTokens } = useAuth();
   const [isLoggedIn, setLoggedIn] = useState(false);
-  const passwordRef = useRef();
+  const [activeField, setActiveField] = useState(
+    document.activeElement.placeholder
+  );
+
+  useEffect(() => {
+    document.body.addEventListener(
+      "focus",
+      () => {
+        setActiveField(document.activeElement.placeholder);
+      },
+      true
+    );
+  }, []);
 
   const referer =
     props.location.state && props.location.state.referer
@@ -43,9 +61,12 @@ function SignupModal(props) {
     return (
       typeof userName === "string" &&
       typeof password === "string" &&
+      typeof email === "string" &&
+      !!email &&
       !!userName &&
       !!password &&
-      password === passwordConfirm
+      password === passwordConfirm &&
+      !errorField
     );
   }
 
@@ -56,8 +77,19 @@ function SignupModal(props) {
   }
 
   function signupUser() {
-    signup({ variables: { userName, password } });
+    signup({ variables: { userName, password, email } });
   }
+
+  useEffect(() => {
+    if (getUserResult.data) {
+      if (getUserResult.data.checkIfUserExists === "userName") {
+        setErrorField("userName");
+      }
+      if (getUserResult.data.checkIfUserExists === "email") {
+        setErrorField("email");
+      }
+    }
+  }, [getUserResult]);
 
   if (isLoggedIn) {
     return <Redirect to={referer} />;
@@ -71,54 +103,90 @@ function SignupModal(props) {
     >
       <div className={classes.container}>
         <DialogContent className={classes.content}>
-          <CustomTextField
+          <DelayedTextField
             value={userName}
             autoFocus
             error={errorField === "userName"}
-            inputRef={userNameRef}
             keyPress={keyPress}
             onChange={(ev) => {
               if (errorField === "userName") {
                 setErrorField(null);
               }
               setUserName(ev.target.value);
+              getUser({ variables: { userName: ev.target.value } });
             }}
             placeholder="Nom d'utilisateur"
-            icon={<AccountCircleIcon />}
+            icon={
+              <AccountCircleIcon
+                color={activeField === "Nom d'utilisateur" ? "secondary" : ""}
+              />
+            }
+            required
+          />
+          {console.log(activeField)}
+          <DelayedTextField
+            value={email}
+            error={errorField === "email"}
+            keyPress={keyPress}
+            onChange={(ev) => {
+              if (errorField === "email") {
+                setErrorField(null);
+              }
+              setEmail(ev.target.value);
+              getUser({ variables: { email: ev.target.value } });
+            }}
+            placeholder="Adresse email"
+            icon={
+              <AlternateEmailIcon
+                color={activeField === "Adresse email" ? "secondary" : ""}
+              />
+            }
             required
           />
           <CustomTextField
+            password
             value={password}
-            error={errorField === "userName"}
-            inputRef={passwordRef}
+            error={errorField === "password"}
             keyPress={keyPress}
             onChange={(ev) => {
-              if (errorField === "userName") {
+              if (errorField === "password") {
                 setErrorField(null);
               }
               setPassword(ev.target.value);
             }}
             placeholder="Mot de passe"
-            icon={<LockIcon />}
+            icon={
+              <LockIcon
+                color={activeField === "Mot de passe" ? "secondary" : ""}
+              />
+            }
             required
           />
           <CustomTextField
+            password
             value={passwordConfirm}
-            error={errorField === "userName"}
+            error={errorField === "passwordConfirm"}
             keyPress={keyPress}
             onChange={(ev) => {
-              if (errorField === "userName") {
+              if (errorField === "passwordConfirm") {
                 setErrorField(null);
               }
               setPasswordConfirm(ev.target.value);
             }}
             placeholder="Confirmation"
-            icon={<LockIcon />}
+            icon={
+              <LockIcon
+                color={activeField === "Confirmation" ? "secondary" : ""}
+              />
+            }
             required
           />
           <Button
             variant="contained"
-            classes={{ root: classes.button, disabled: classes.disabledButton }}
+            classes={{
+              root: classes.button,
+              disabled: classes.disabledButton,
+            }}
             disabled={!isValid()}
             onClick={signupUser}
             size="large"
@@ -150,6 +218,7 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 10,
     "&$disabledButton": {
       backgroundColor: theme.palette.secondary.disabled,
+      color: theme.palette.white.disabled,
     },
   },
   disabledButton: {},

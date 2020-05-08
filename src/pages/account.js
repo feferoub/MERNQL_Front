@@ -46,7 +46,7 @@ function Account(props) {
 
 const useStyles = makeStyles((theme) => ({
   button: {
-    backgroundColor: theme.color.secondary,
+    backgroundColor: theme.palette.secondary.main,
     borderRadius: 10,
   },
 }));

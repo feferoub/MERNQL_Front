@@ -27,7 +27,19 @@ function ConnectionModal(props) {
   const [isLoggedIn, setLoggedIn] = useState(false);
   const passwordRef = useRef();
   const userNameRef = useRef();
+  const [activeField, setActiveField] = useState(
+    document.activeElement.placeholder
+  );
 
+  useEffect(() => {
+    document.body.addEventListener(
+      "focus",
+      () => {
+        setActiveField(document.activeElement.placeholder);
+      },
+      true
+    );
+  }, []);
   let history = useHistory();
   const referer =
     props.location.state && props.location.state.referer
@@ -63,7 +75,7 @@ function ConnectionModal(props) {
   }
 
   function loginUser() {
-    login({ variables: { userName: username, password } });
+    login({ variables: { userName: username, password, email: username } });
   }
 
   if (isLoggedIn) {
@@ -90,8 +102,14 @@ function ConnectionModal(props) {
               }
               setUserName(ev.target.value);
             }}
-            placeholder="Nom d'utilisateur"
-            icon={<AccountCircleIcon />}
+            placeholder="Nom d'utilisateur / Email"
+            icon={
+              <AccountCircleIcon
+                color={
+                  activeField === "Nom d'utilisateur / Email" ? "secondary" : ""
+                }
+              />
+            }
             required
           />
           <CustomTextField
@@ -105,7 +123,11 @@ function ConnectionModal(props) {
               setPassword(ev.target.value);
             }}
             placeholder="Mot de passe"
-            icon={<LockIcon />}
+            icon={
+              <LockIcon
+                color={activeField === "Mot de passe" ? "secondary" : ""}
+              />
+            }
             required
             inputRef={passwordRef}
             password
@@ -125,7 +147,7 @@ function ConnectionModal(props) {
             onClick={() => history.push("/signup")}
             size="large"
           >
-            S'inscire
+            S'inscrire
           </Button>
         </DialogContent>
       </div>

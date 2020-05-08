@@ -6,7 +6,7 @@ import HomePage from "./pages/home";
 import PrivateRoute from "./network/PrivateRoute";
 import Login from "./pages/login";
 import SignupPage from "./pages/Signup";
-
+import UsersPage from "./pages/Users";
 function Roots() {
   return (
     <div>
@@ -17,6 +17,9 @@ function Roots() {
 
         <Route path="/home">
           <HomePage />
+        </Route>
+        <Route path="/users">
+          <UsersPage />
         </Route>
         <PrivateRoute path="/account">
           <Account />

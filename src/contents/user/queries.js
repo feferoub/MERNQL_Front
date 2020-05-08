@@ -2,7 +2,7 @@ import { gql } from "apollo-boost";
 
 export const GET_USERS = gql`
   {
-    user {
+    users {
       firstName
       lastName
       userName
@@ -12,8 +12,8 @@ export const GET_USERS = gql`
 `;
 
 export const GET_USER = gql`
-  query($id: ID) {
-    user(id: $id) {
+  query($id: ID, $userName: String, $email: String) {
+    user(id: $id, userName: $userName, email: $email) {
       firstName
       lastName
       userName
@@ -22,8 +22,14 @@ export const GET_USER = gql`
   }
 `;
 
+export const CHECK_USER_EXIST = gql`
+  query($userName: String, $email: String) {
+    checkIfUserExists(userName: $userName, email: $email)
+  }
+`;
+
 export const LOGIN = gql`
-  query($userName: String!, $password: String!) {
-    login(userName: $userName, password: $password)
+  query($userName: String!, $password: String!, $email: String!) {
+    login(userName: $userName, password: $password, email: $email)
   }
 `;
