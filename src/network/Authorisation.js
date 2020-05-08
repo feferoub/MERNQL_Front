@@ -20,6 +20,7 @@ function Authorisation(props) {
       (message) => {
         if (message.data === "Disconnect") {
           setTokens();
+          history.push("/home");
         }
       },
       false

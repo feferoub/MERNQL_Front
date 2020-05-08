@@ -1,11 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Dialog,
-  DialogContent,
-  TextField,
-  InputAdornment,
-  Button,
-} from "@material-ui/core";
+import { Dialog, DialogContent, Button } from "@material-ui/core";
 import { useHistory } from "react-router-dom";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 import LockIcon from "@material-ui/icons/Lock";
@@ -14,17 +8,12 @@ import { useLazyQuery } from "@apollo/react-hooks";
 import { LOGIN } from "../contents/user/queries";
 import { Redirect } from "react-router-dom";
 import { useAuth } from "../context/auth";
-import CustomTextField from "../contents/components/TextField";
+import CustomTextField from "../contents/user/FormComponents/TextField";
 
 function ConnectionModal(props) {
-  const [username, setUserName] = useState("");
-  const [password, setPassword] = useState("");
+  let history = useHistory();
   const classes = useStyles();
-  const theme = useTheme();
-  const [errorField, setErrorField] = useState(null);
-  const [login, { data, error }] = useLazyQuery(LOGIN);
-  const { setAuthTokens } = useAuth();
-  const [isLoggedIn, setLoggedIn] = useState(false);
+
   const passwordRef = useRef();
   const userNameRef = useRef();
   const [activeField, setActiveField] = useState(
@@ -40,18 +29,13 @@ function ConnectionModal(props) {
       true
     );
   }, []);
-  let history = useHistory();
-  const referer =
-    props.location.state && props.location.state.referer
-      ? props.location.state.referer
-      : "/account";
 
-  useEffect(() => {
-    if (data && data.login) {
-      setAuthTokens(data.login);
-      setLoggedIn(true);
-    }
-  }, [data]);
+  const [username, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  const [login, { data, error }] = useLazyQuery(LOGIN);
+  const { setAuthTokens } = useAuth();
+  const [isLoggedIn, setLoggedIn] = useState(false);
+  const [errorField, setErrorField] = useState(null);
 
   useEffect(() => {
     if (error) {
@@ -66,6 +50,13 @@ function ConnectionModal(props) {
     }
   }, [error]);
 
+  useEffect(() => {
+    if (data && data.login) {
+      setAuthTokens(data.login);
+      setLoggedIn(true);
+    }
+  }, [data]);
+
   function keyPress(e) {
     if (e.keyCode === 13 && !!username && !!password) {
       loginUser();
@@ -77,6 +68,11 @@ function ConnectionModal(props) {
   function loginUser() {
     login({ variables: { userName: username, password, email: username } });
   }
+
+  const referer =
+    props.location.state && props.location.state.referer
+      ? props.location.state.referer
+      : "/account";
 
   if (isLoggedIn) {
     return <Redirect to={referer} />;

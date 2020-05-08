@@ -15,47 +15,16 @@ import { SIGNUP } from "../contents/user/mutations";
 import { CHECK_USER_EXIST } from "../contents/user/queries";
 import { Redirect } from "react-router-dom";
 import { useAuth } from "../context/auth";
-import CustomTextField from "../contents/components/TextField";
-import DelayedTextField from "../contents/components/DelayedTextField";
+import CustomTextField from "../contents/user/FormComponents/TextField";
+import DelayedTextField from "../contents/user/FormComponents/DelayedTextField";
 
 function SignupModal(props) {
+  const classes = useStyles();
+
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [errorField, setErrorField] = useState(null);
-  const classes = useStyles();
-  const [signup, { data }] = useMutation(SIGNUP);
-  const [getUser, getUserResult] = useLazyQuery(CHECK_USER_EXIST, {
-    fetchPolicy: "network-only",
-  });
-  const { setAuthTokens } = useAuth();
-  const [isLoggedIn, setLoggedIn] = useState(false);
-  const [activeField, setActiveField] = useState(
-    document.activeElement.placeholder
-  );
-
-  useEffect(() => {
-    document.body.addEventListener(
-      "focus",
-      () => {
-        setActiveField(document.activeElement.placeholder);
-      },
-      true
-    );
-  }, []);
-
-  const referer =
-    props.location.state && props.location.state.referer
-      ? props.location.state.referer
-      : "/account";
-
-  useEffect(() => {
-    if (data && data.signup) {
-      setAuthTokens(data.signup);
-      setLoggedIn(true);
-    }
-  }, [data]);
 
   function isValid() {
     return (
@@ -80,6 +49,11 @@ function SignupModal(props) {
     signup({ variables: { userName, password, email } });
   }
 
+  const [errorField, setErrorField] = useState(null);
+  const [getUser, getUserResult] = useLazyQuery(CHECK_USER_EXIST, {
+    fetchPolicy: "network-only",
+  });
+
   useEffect(() => {
     if (getUserResult.data) {
       if (getUserResult.data.checkIfUserExists === "userName") {
@@ -90,6 +64,35 @@ function SignupModal(props) {
       }
     }
   }, [getUserResult]);
+
+  const [activeField, setActiveField] = useState(
+    document.activeElement.placeholder
+  );
+
+  useEffect(() => {
+    document.body.addEventListener(
+      "focus",
+      () => {
+        setActiveField(document.activeElement.placeholder);
+      },
+      true
+    );
+  }, []);
+
+  const [signup, { data }] = useMutation(SIGNUP);
+  const { setAuthTokens } = useAuth();
+  const [isLoggedIn, setLoggedIn] = useState(false);
+  useEffect(() => {
+    if (data && data.signup) {
+      setAuthTokens(data.signup);
+      setLoggedIn(true);
+    }
+  }, [data]);
+
+  const referer =
+    props.location.state && props.location.state.referer
+      ? props.location.state.referer
+      : "/account";
 
   if (isLoggedIn) {
     return <Redirect to={referer} />;
@@ -123,7 +126,6 @@ function SignupModal(props) {
             }
             required
           />
-          {console.log(activeField)}
           <DelayedTextField
             value={email}
             error={errorField === "email"}

@@ -5,6 +5,7 @@ import { useHistory } from "react-router-dom";
 import { GET_USER } from "../contents/user/queries";
 import { useQuery } from "@apollo/react-hooks";
 import { useAuth } from "../context/auth";
+import UserCard from "../contents/user/UserCard";
 
 function Account(props) {
   const classes = useStyles();
@@ -15,31 +16,28 @@ function Account(props) {
     fetchPolicy: "network-only",
   });
 
-  if (loading) {
+  if (loading || !data || !data.user) {
     return <div></div>;
   }
   return (
-    <div
-      style={{
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-    >
+    <div className={classes.container}>
       <h2>Mon compte</h2>
-      <h2>{data && data.user && data.user.userName}</h2>
-      <Button
-        variant="contained"
-        className={classes.button}
-        size="large"
-        onClick={() => {
-          history.push("/home");
-          setAuthTokens();
-        }}
-      >
-        Déconnection
-      </Button>
+      <div className={classes.cardContainer}>
+        <UserCard user={data.user} />
+        <div className={classes.buttonContainer}>
+          <Button
+            variant="contained"
+            className={classes.button}
+            size="large"
+            onClick={() => {
+              history.push("/home");
+              setAuthTokens();
+            }}
+          >
+            Déconnection
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -48,6 +46,21 @@ const useStyles = makeStyles((theme) => ({
   button: {
     backgroundColor: theme.palette.secondary.main,
     borderRadius: 10,
+    width: "100%",
+  },
+  container: {
+    width: "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    marginTop: theme.spacing(6),
+  },
+  cardContainer: {
+    marginTop: theme.spacing(6),
+  },
+  buttonContainer: {
+    paddingRight: theme.spacing.unit * 2,
+    paddingLeft: theme.spacing.unit * 2,
   },
 }));
 
